@@ -28,6 +28,7 @@ protected:
 	/** ƒ‚ƒfƒ‹•`‰æ */
 	ModelRender m_modelRender;
 	Vector3 m_position;
+	Vector3 m_speed;
 	Transform m_transform;
 
 

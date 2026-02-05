@@ -1,154 +1,280 @@
 #pragma once
-#include "stdafx.h"
+#include <array>
+
+enum class DataType
+{
+	BgmVolume,
+	SeVolume,	
+	Stage,
+	ClearStage,
+	Score,
+	Residue,
+	HighScore
+};
+
+enum class ItemType
+{
+	SnowBall,
+	StarDust,
+	Mushroom,
+	Crystal,
+	Water,
+	Max
+};
+
+enum class StageType
+{
+	Max
+};
+
+namespace {
+	const int ZERO_DATA = 0;
+	const int MAX_ITEM_COUNT = 99;
+	const int MIN_ITEM_COUNT = 0;
+	const int MAX_VOLUME = 100;
+	const int MIN_VOLUME = 0;
+}
+
 
 /*
 * GameData.h
 * ゲームデータ管理クラス
 */
-
 class GameData
 {
 private:
 	GameData() {};
-	~GameData() {};
-	static GameData* m_gameData;
+	~GameData() =default;
 
 
 public:
 	//インスタンス管理関数
-	static GameData* GetInstance()
+	static GameData& GetInstance()
 	{
-		return m_gameData;
+		static GameData instance;
+		return instance;
 	}
-	//インスタンス生成
-	static void CreateInstance()
-	{
-		if (m_gameData == nullptr)
-		{
-			m_gameData = new GameData();
-		}
-	}
-	//インスタンス破棄
-	static void DeleteInstance()
-	{
-		if (m_gameData != nullptr)
-		{
-			delete m_gameData;
-			m_gameData = nullptr;
-		}
-	}	
-
-	//データ記録関数
-	//引数：識別番号
-	//　　：記録するデータ	
-	//0：BGM音量データ
-	//1：SE音量データ
-	//2：アイテム所持量データ
-	//3：ステージデータ
-	//4：クリアステージデータ
-	//5：スコアデータ
-	//6：残基データ
-	//7：ハイスコアデータ
-	void DataRecord(int m_IdentificationNumber,int *Data)
+	/**
+	  *データ記録関数
+	  *引数：識別番号
+	  *　　：記録するデータ	
+	  *0：BGM音量データ			1：SE音量データ
+	  *2：ステージデータ		3：クリアステージデータ
+	  *4：スコアデータ			5：残基データ
+	  *6：ハイスコアデータ
+	  *使用例:GameData::GetInstance().DataRecord(DataType::Score, 100);
+	  */
+	void DataRecord(DataType type,int Data)
 	{
 		//データ記録処理
-		switch (m_IdentificationNumber)
+		switch (type)
 		{
 			//BGM音量データ
-			case 0:
-				m_bgmVolumeData = *Data;
+		case DataType::BgmVolume:
+			SetBgmVolume(Data);
 			break;
 			//SE音量データ
-			case 1:
-				m_seVolumeData = *Data;
-			break;
-			//アイテムデータ
-			case 2:
-				m_itemInventoryData = *Data;			
+		case DataType::SeVolume:
+			SetSeVolume(Data);
 			break;
 			//ステージデータ
-			case 3:
-				m_stageData = *Data;
+			case  DataType::Stage:
+				SetStage(Data);
 			break;
 			//クリアステージデータ
-			case 4:
-				if (m_clearStageData < *Data)
-				{
-					m_clearStageData = *Data;
-				}
+			case  DataType::ClearStage:
+				SetClearStage(Data);
 			break;
 			//スコアデータ
-			case 5:
-				m_scoreData = *Data;
+			case  DataType::Score:
+				SetScore(Data);
 			break;
 			//残基データ
-			case 6:
-				m_residueData = *Data;
+			case  DataType::Residue:
+				SetResidue(Data);
 			break;
 			//ハイスコアデータ
-			case 7:
-				if (m_highScoreData < *Data)
-				{
-					m_highScoreData = *Data;
-				}
+			case  DataType::HighScore:
+				SetHighScore(Data);
 			break;
-
+			default:
+				return;
+			break;
 		}
 	}
-
-	//データ取得関数
-	//引数：識別番号
-	//戻り値：取得したデータ
-	//0：BGM音量データ1,：SE音量データ
-	//2：アイテム所持量データ
-	//3：ステージデータ
-	//4：クリアステージデータ
-	//5：スコアデータ
-	//6：残基データ
-	//7：ハイスコアデータ
-	int DataGet(int m_IdentificationNumber)
+	/**
+	  *データ取得関数
+	  *引数：識別番号
+	  *戻り値：取得したデータ
+	  *0：BGM音量データ			1：SE音量データ
+	  *2：ステージデータ		3：クリアステージデータ	
+	  *4：スコアデータ			5：残基データ
+	  *6：ハイスコアデータ
+	  *使用例:int score = GameData::GetInstance().DataGet(DataType::Score);
+	  */
+	int DataGet(DataType type)
 	{
 		//データ取得処理
-		switch (m_IdentificationNumber)
+		switch (type)
 		{
 			//BGM音量データ
-			case 0:
-				return m_bgmVolumeData;
+			case  DataType::BgmVolume:
+				return GetBgmVolume();
 			break;
 			//SE音量データ
-			case 1:
-				return m_seVolumeData;
-			break;
-			//アイテムデータ
-			case 2:
-				return m_itemInventoryData;			
+			case  DataType::SeVolume:
+				return GetSeVolume();
 			break;			
 			//ステージデータ
-			case 3:
-				return m_stageData;
+			case  DataType::Stage:
+				return GetStage();
 			break;
 			//クリアステージデータ
-			case 4:
-				return m_clearStageData;
+			case  DataType::ClearStage:
+				return GetClearStage();
 			break;
 			//スコアデータ
-			case 5:
-				return m_scoreData;
+			case  DataType::Score:
+				return GetScore();
 			break;
 			//残基データ
-			case 6:
-				return m_residueData;
+			case  DataType::Residue:
+				return GetResidue();
 			break;
 			//ハイスコアデータ
-			case 7:
-				return m_highScoreData;
+			case  DataType::HighScore:
+				return GetHighScore();
 			break;
+			default:
+				return ZERO_DATA;
 		}		
 	}
 
+	/**
+	* アイテム所持数加算処理
+	* 呼び出し方
+	* 例：GameData::GetInstance().AddItem(ItemType::SnowBall, 5);
+	*/
+	void AddItem(ItemType type, int count)
+	{
+		// 所持数加算
+		m_itemInventoryData[static_cast<int>(type)] += count;
+		// 所持数上限チェック
+		// 所持数が上限を超えた場合、上限値に設定
+		m_itemInventoryData[static_cast<int>(type)] =
+			min(m_itemInventoryData[static_cast<int>(type)], MAX_ITEM_COUNT);
+	}
+
+	/**
+	 * アイテム所持数減算処理
+	 * 呼び出し方
+	 * 例：GameData::GetInstance().DecItem(ItemType::SnowBall, 5);
+	 */
+	void DecItem(ItemType type, int count)
+	{
+		m_itemInventoryData[static_cast<int>(type)] -= count;
+		// 所持数下限チェック
+		// 所持数が下限を下回った場合、下限値に設定
+		m_itemInventoryData[static_cast<int>(type)] = 
+			max(m_itemInventoryData[static_cast<int>(type)], MIN_ITEM_COUNT);
+	}
+
+	/**
+	* アイテム所持数取得処理
+	* 呼び出し方
+	* 例：int itemCount = GameData::GetInstance().GetItemCount(ItemType::SnowBall);
+	*/
+	int GetItemCount(ItemType type)const
+	{
+		return m_itemInventoryData[static_cast<int>(type)];
+	}
+
+
+	private:
+
+	void SetBgmVolume(int volume)
+	{
+		m_bgmVolumeData = volume;
+		m_stageData = max(m_stageData, ZERO_DATA);
+		m_bgmVolumeData = min(m_bgmVolumeData, MAX_VOLUME);
+	}
+
+	int GetBgmVolume()const
+	{
+		return m_bgmVolumeData;
+	}
+
+	void SetSeVolume(int volume)
+	{
+		m_seVolumeData = volume;
+		m_seVolumeData = min(m_seVolumeData, MAX_VOLUME);
+		m_seVolumeData = max(m_seVolumeData, MIN_VOLUME);
+	}
+
+	int GetSeVolume()const
+	{
+		return m_seVolumeData;
+	}
+
+	void SetStage(int stage)
+	{
+		m_stageData = stage;
+
+	}
+
+	int GetStage()const
+	{
+		return m_stageData;
+	}
+
+	void SetClearStage(int stage)
+	{
+		if (m_clearStageData < stage)
+		{
+			m_clearStageData = stage;
+		}
+	}
+
+	int GetClearStage()const
+	{
+		return m_clearStageData;
+	}
+
+	void SetScore(int score)
+	{
+		m_scoreData = score;
+	}
+
+	int GetScore()const
+	{
+		return m_scoreData;
+	}
+
+	void SetHighScore(int score)
+	{
+		if (m_highScoreData < score)
+		{
+			m_highScoreData = score;
+		}
+	}
+
+	int GetHighScore()const
+	{
+		return m_highScoreData;
+	}
+
+	void SetResidue(int residue)
+	{
+		m_residueData = residue;
+	}
+
+	int GetResidue()const
+	{
+		return m_residueData;
+	}
 
 private:
-	int m_itemInventoryData=0; //アイテム所持量データ
+	std::array<int, static_cast<int>(ItemType::Max)>m_itemInventoryData{}; //アイテムごとの所持量データ
 	int m_bgmVolumeData=50; //音量データ
 	int m_seVolumeData=50; //SE音量データ
 	int m_stageData=0;//ステージデータ
@@ -157,15 +283,4 @@ private:
 	int m_highScoreData = 0;//ハイスコアデータ
 	int m_residueData = 3; //残基データ
 	int m_dummyData = 0;//ダミーデータ
-};
-
-//GameDataのインスタンス管理クラス
-class DataManager :public IGameObject
-{
-	public:
-		//コンストラクタ・デストラクタ
-	DataManager(){GameData::CreateInstance();}
-	~DataManager() { GameData::DeleteInstance(); }
-
-
 };
