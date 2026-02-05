@@ -1,0 +1,36 @@
+必要データ
+
+SEの音量
+BGMの音量
+アイテム量
+所持アイテムの種類識別
+ステージ選択
+クリアしたステージ
+所持している薬
+
+
+ゲームScript構造
+
+GameSystemからそれぞれのシステムに干渉して、ActerたちはGameSystemに情報を渡してやるだけ
+
+
+enum class Item
+{
+	None,//何も持っていない状態
+	Snow,//雪
+	Flower,//花
+	Marchroom,//キノコ
+	Wood,//木材
+	Water,//水
+	MagicWater,//魔法の水
+
+};
+
+enum class Tool
+{
+	None,//何も持っていない状態
+	Bucket,//バケツ
+	Tongs,//トング
+	GlassBottle,//ガラス瓶
+	FlorenceFlask//丸底フラスコ
+};

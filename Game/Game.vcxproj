@@ -224,6 +224,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameData.cpp" />
     <ClCompile Include="GameSystem\AtkSystem\AtkSystem.cpp" />
     <ClCompile Include="GameSystem\OptionSystem\OptionSystem.cpp" />
     <ClCompile Include="GameSystem\SelectSystem\SelectSystem.cpp" />
