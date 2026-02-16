@@ -15,12 +15,15 @@ class Character : public Actor
 protected:
 
 
+public:
+	Vector3 m_moveSpeed; //ˆÚ“®‘¬“x
 
 
 public:
-	virtual bool Start() override {};
+	virtual bool Start() override { return true; };
 	virtual void Update() override {};
 	virtual void Render(RenderContext& rc) override {};
+
 };
 
 

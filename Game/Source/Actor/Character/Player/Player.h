@@ -3,148 +3,180 @@
 * プレイヤー基底クラス
 */
 
+enum EnAnimationClip {
+	enAnimationClip_Idle,//待機
+	enAnimationClip_Walk,//歩き
+	enAnimationClip_Run,//走り
+	enAnimationClip_Jump,//ジャンプ
+	enAnimationClip_Clear,//クリア
+	enAnimationClip_Death,//死亡
+	enAnimationClip_Pain,//ダメージ
+	enAnimationClip_Num//アニメーションクリップ数
+};
+
+namespace {
+	int MAX_JUMP_COUNT = 2; // 最大ジャンプ回数
+
+
+}
+
+//Playerの変数をまとめる名前空間
+namespace PlayerVariable
+{
+	//Playerのアイテム所持状況
+	//アイテム所持状況
+	//0:なし、1:スノーボール、2:スター、3:キノコ、4:本
+	//0:None, 1:SnowBall, 2:Star, 3:Mushroom, 4:Book
+	//呼び出しかた
+	// 例:ItemStatus::SnowBall
+	namespace ItemStatus
+	{
+		enum {
+			None = 0,
+			SnowBall = 1,
+			Star = 2,
+			Mushroom = 3,
+			Book = 4
+		};
+	}
+
+	//Playerの形態状態
+	//0:死亡形態、1:通常形態、2:大人形態、3:魔女形態、4:形態数
+	//0:Death, 1:Normal, 2:Adult, 3:Witch、4:Num
+	//呼び出しかた
+	// 例:PlayerVariable::FormState::SpeedUp
+	namespace FormState {
+		enum {
+			Death = 0,
+			Normal = 1,
+			Adult = 2,
+			Witch = 3,
+			Num = 4
+		};
+	}
+
+	const uint8_t INITIAL_RESIDUE = 3; //初期残基数
+	const float MAX_JUMP_POWER = 1000.0f; //最大ジャンプ力
+	const float RESET_TIME = 0.0f; //リセット時間
+	const uint8_t RESET_JUMP_COUNT = 0; //リセットジャンプ回数
+	const float  NONE_SPEED = 0.0f; //スピードアップなし
+	const uint8_t VECTOR_SIZE = 10; //ベクトルサイズ
+
+	namespace Transform
+	{
+		const Vector3 INITIAL_COORDINATE = Vector3(500.0f, 1500.0f, 0.0f);//初期座標
+		const float GRAVITY = 50.0f; //重力
+		const uint8_t ACCELERATION_TIME = 5;//加速時間
+		const float BASICS_SPEED = 400.0f; //基本速度
+		const Vector3 VECTOR_UP = Vector3(0.0f, 1.0f, 0.0f); //上方向ベクトル
+		const Vector3 INITIAL_SCALE = Vector3(1.5f, 1.5f, 1.5f); //初期スケール
+		const Vector3 COLLISION_SCALE = Vector3(50.0f, 35.0f, 50.0f); //当たり判定スケール
+
+	}
+}
+
 #pragma once
 #include "Source/Actor/Character/Character.h"
 
 class GameCamera;
+class PlayerStateMachine;
 
 
-class Player 
+class Player : public Character
 {
-private:
+public:
 	Player();
 	 ~Player();
-	 static Player* m_instance;
-
-
-public:
-	static Player* GetInstance()
-	{
-		return m_instance;
-	}
-
-	static void CreateInstance()
-	{
-		if (m_instance == nullptr)
-		{
-			m_instance = new Player();
-		}
-	}
-
-	static void DeleteInstance()
-	{
-		if (m_instance != nullptr)
-		{
-			delete m_instance;
-			m_instance = nullptr;
-		}
-	}
-	//関数
 
 	//初期化
 	bool Start();
 	//更新
 	void Update();
-	//移動
-	void Move();
-	//回転
-	void Rotate();
-	//アニメーション
-	void PlayeAnimation();
 	//投的攻撃判定
 	void ProjectionAtk();
 	//ダメージ判定
 	void Damage();
+	//動き
+	void Move();
+	//ジャンプ
+	void Jump();
+	//加速
+	void SpeedUp();
+	//動き更新
+	void MoveUpdate();
+
+
+
+	//アニメーション
+	void SetPlayAnimation(EnAnimationClip animation);
+
 	//描画
 	void Render(RenderContext& rc);
 
-
-	const Vector3& GetPosition() const
+	void SetPlayerInformation()
 	{
-		return m_position;
+		m_stateMachine->SetPlayer(this);
 	}
+
 	const Vector3& GetPlayerDir()const
 	{
 		return m_facingDir;
 	}
-	const CollisionObject* GetPlayerCollisionObject() const
+
+	const CollisionObject& GetPlayerCollisionObject() const
 	{
-		return m_playerCollisionObj;
+		return *m_playerCollisionObj;
 	}
 
-	//ここからメンバー変数
-	ModelRender m_modelRender[4];//モデルレンダー。
-	//Hands On1　座標データを追加する。
-	Vector3 m_position;//座標。
-	Vector3 m_moveSpeed;
+	const bool GetIsOnGround() const
+	{
+		return m_characterController.IsOnGround();
+	}
+
+	const int GetJumpCount() const
+	 {
+		 return m_jumpCount;
+	 }
+
+	void SetJumpCount(int count)
+	 {
+		 m_jumpCount = count;
+	 }
+	
+	const int GetMaxJumpCount() const
+	 {
+		 return MAX_JUMP_COUNT;
+	 }
+
+	const EnAnimationClip GetEnAnimationClip() const
+	{
+		if (!g_pad[0]->IsPressAnyKey())
+		{
+			return enAnimationClip_Idle;
+		}
+		return m_setAnimation;
+	}
+private:
+	void SetEnAnimationClip(EnAnimationClip animation)
+	{
+		m_setAnimation = animation;
+	}
+
+
+
+private:
+	std::unique_ptr<PlayerStateMachine> m_stateMachine;
+
 	CharacterController m_characterController;
-	Quaternion m_rotation;
-	int m_formState;//Playerの形態状態
-	int m_residue = 3;
-	int m_itemStatus = 0;//アイテム所持状況
 	CollisionObject* m_playerCollisionObj;
 	Vector3 m_facingDir = Vector3(0.0f, 0.0f, 1.0f); // 初期向き
-
-	enum EnAnimaationClip {
-		enAnimationClip_Idle,//待機
-		enAnimationClip_Walk,//歩き
-		enAnimationClip_Run,//走り
-		enAnimationClip_Jump,//ジャンプ
-		enAnimationClip_Clear,//クリア
-		enAnimationClip_Death,//死亡
-		enAnimationClip_Pain,//ダメージ
-		enAnimationClip_Num//アニメーションクリップ数
-	};
-
 	FontRender m_posRender;//座標表示用
 	Vector3 m_playerCollisionScale;	//プレイヤーの当たり判定スケール
 	AnimationClip m_animationClips[enAnimationClip_Num];//アニメーションクリップ
-	float m_time = 0.0f;//時間
-	float m_acceleration = 1.5f;//加速度
-	float m_initialVelocity = 10.0f;//初速度
-	float m_reset = 0.0f;	//リセット用
 	int m_jumpCount = 0;//ジャンプ回数
-	int m_enemyjumpCount = 0;
-	bool m_jumpFlag = false;//ジャンプフラグ
-	int m_playerAnimationState = 0;//Playerのアニメーション状態	
-	int m_form0 = 1;//形態状態
-	int m_form1 = 2;//形態状態
-	int m_form2 = 3;//形態状態
-	float m_jumpingPower = 0.0f;//ジャンプ力
-	bool sperd = false;//スピードアップフラグ
-	bool m_playerRenderFlag = true; //プレイヤーの描画フラグ
-	bool m_backout = true; //ブラックアウトフラグ
 	int m_score = 0; //スコア
-	float m_damageCoolTime = 0.0f; //ダメージクールタイム
-};
-
-class PlayerJoint : public Character
-{
-public:
-	PlayerJoint()
-	{
-		Player::CreateInstance();
-	}
-	~PlayerJoint()
-	{
-
-		Player::DeleteInstance();
-	}
-	virtual bool Start()
-	{
-		Player::GetInstance()->Start();
-		return true;
-	}
-	virtual void Update()
-	{
-		Player* player = Player::GetInstance();
-		if (player == nullptr)return;
-		player->Update();
-	}
-	virtual void Render(RenderContext& rc)
-	{
-		Player* player = Player::GetInstance();
-		if (player == nullptr)return;
-		player->Render(rc);
-	}
+	int m_itemStatus = 0;//アイテム所持状況
+	float m_time = 0.0f; //時間経過用
+	bool m_sperd = true;
+	EnAnimationClip m_setAnimation = enAnimationClip_Idle; //アニメーションクリップ
 };
